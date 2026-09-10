@@ -1,0 +1,7 @@
+cloud_configuration.ini
+run.py
+vendor/
+ __pycache__/
+
+*.pyc
+.idea/
