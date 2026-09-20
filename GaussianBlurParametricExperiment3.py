@@ -1,14 +1,14 @@
 """
 Experiment Name: Parametric Experiment 3
 Experiment Description: This experiment will build on the results of previously identified optium architectures and
-                        determine the kernel size which increases model performance the most.
+                        determine the kernel size which increases model performance the most, and will store Feature
+                        Activation Maps in S3.
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-from GausianBlurCategoriser.GaussianBlurParametricExperiment1 import CNN_ARCHITECTURE
 from UploadToBucket import UploadToBucket
 from GausiannBlurGenerator import GausiannBlurGenerator
 from DataLoaderFactory import *
@@ -24,7 +24,7 @@ print("-------------------- Configuring Parameters --------------------")
 parametric_config = configparser.ConfigParser()
 parametric_config.read('parametric_configuration.ini')
 
-EXPERIMENT_NAME = parametric_config["parametric_experiment_2"]["experiment_name"]
+EXPERIMENT_NAME = parametric_config["parametric_experiment_3"]["experiment_name"]
 COMMON_ATTRIBUTES_ID = parametric_config["common_attributes"]["common_attributes_config_id"]
 
 CNN_START_KERNEL_SIZE = int(parametric_config[EXPERIMENT_NAME]["cnn_start_kernel_size"])
@@ -43,7 +43,7 @@ NUM_PADDING = 1
 STRIDE = 1
 NUM_LAYERS = 4
 
-CNN_ARCHITECTURE = {}
+CNN_ARCHITECTURE = {1 : [1, 10, 10, 1, 1], 2: [10, 50, 5, 1, 1]}
 
 #Data Parameters
 
@@ -73,5 +73,49 @@ train_loader, dev_test_loader, final_test_loader = produce_dataloader(synthetic_
 
 #Generate CNN architecture
 
+print("-------------------- Generating Experimental Architectures --------------------")
+
 model_store = []
 training_store = []
+
+for experiment in EXPERIMENT_PARAMETERS:
+    current_experimental_architecture = CNN_ARCHITECTURE
+
+    model_name = EXPERIMENT_NAME + "_Kernel_" + str(experiment)
+
+    for key in list(current_experimental_architecture.keys()):
+        current_experimental_architecture[key][2] = math.floor(experiment)
+
+    model_store.append(ModelGenerator(model_name))
+    model_store[-1].generate_cnn_layers_model(current_experimental_architecture, INPUT_SIZE)
+    model_store[-1].generate_fnn_layers_models(FFN_ARCHITECTURE)
+
+#Training Models
+
+print("-------------------- Training and Testing Models --------------------")
+
+for model in model_store:
+    training_store.append(ModelTrainingFactory(model, LEARNING_RATE, EXPERIMENT_NAME))
+
+    training_store[-1].train_model(train_loader, dev_test_loader, NUM_TRAINING_EPOCHS)
+
+    training_store[-1].set_summary_graph_name()
+
+    training_store[-1].generate_summary_data()
+    training_store[-1].generate_feature_map_summary_file()
+
+    upload_to_bucket.upload_file(training_store[-1].get_summary_graph_name(),
+                                 training_store[-1].get_summary_graph_name())
+
+    for feature_map_name in training_store[-1].get_feature_map_names():
+        upload_to_bucket.upload_file(feature_map_name, feature_map_name)
+
+print("Trained and uploaded all individual summary files. ")
+print("Generating Experiment Summary Graph")
+
+graph_factory = GraphFactory(training_store)
+
+graph_factory.set_graph_name(EXPERIMENT_NAME)
+graph_name = graph_factory.plot_graph()
+
+upload_to_bucket.upload_file(graph_name, graph_name)

@@ -50,6 +50,11 @@ def run_experiment(aws_configuration_file, training_script):
     AWS_ROLE_ID = str(aws_config['aws_config']['aws_role'])
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+    TRAINING_IMAGE_COMPUTE = str(aws_config['compute_config']['training_image_compute'])
+    TRAINING_INSTANCE_COMPUTE = str(aws_config['compute_config']['training_instance_compute'])
+
+
+
 
     os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
     os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
@@ -74,7 +79,7 @@ def run_experiment(aws_configuration_file, training_script):
         region=AWS_DEFAULT_REGION,
         version="2.0.0",
         py_version="py310",
-        instance_type="ml.g4dn.xlarge",
+        instance_type=TRAINING_IMAGE_COMPUTE,
         image_scope="training"
     )
 
@@ -87,7 +92,7 @@ def run_experiment(aws_configuration_file, training_script):
     print("Setting up Compute")
 
     compute = Compute(
-        instance_type="ml.g4dn.xlarge",
+        instance_type=TRAINING_INSTANCE_COMPUTE,
         instance_count=1,
     )
 

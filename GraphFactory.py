@@ -94,7 +94,7 @@ class GraphFactory:
                 - FILE_NAME (str): Name of the saved output image file.
                 """
 
-        GRAPH_NAME = self.graph_name + " Overall Training Graph"
+        GRAPH_NAME = self.graph_name + " Overall_Training_Graph"
         FILE_NAME = GRAPH_NAME + ".png"
 
         print("Plotting Graphs")

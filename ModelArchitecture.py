@@ -18,6 +18,8 @@ class ModelGenerator(nn.Module):
 
         self.latest_num_layers_cnn_layers = 0
 
+        self.feature_maps = []
+
     def calculate_num_pixels(self):
         pass
 
@@ -29,7 +31,7 @@ class ModelGenerator(nn.Module):
             input_size: represents the X x Y size of the image. For example, a 4 x 4 image would be represented as 4. """
 
         output_size_per_layer_1D = input_size
-        latest_num_layers = 0
+        latest_num_layers = 1
         for position, layer in enumerate(model_architecture.keys()):
             num_input_channels = model_architecture[layer][0]
             num_output_channels = model_architecture[layer][1]
@@ -55,6 +57,7 @@ class ModelGenerator(nn.Module):
             latest_num_layers = num_output_channels
 
             self.network.append(nn.ReLU())
+
             self.network.append(nn.MaxPool2d(kernel_size=2, stride=2))
 
             output_size_per_layer_1D = self.calculate_output_pixels_1D(output_size_per_layer_1D, 2, 0, 2)
@@ -66,6 +69,8 @@ class ModelGenerator(nn.Module):
         self.network.append(nn.Flatten())
 
         self.latest_num_layers_cnn_layers = latest_num_layers
+
+
 
     def generate_fnn_layers_models(self, model_architecture):
         """model_architecture should be in the format:
@@ -94,16 +99,22 @@ class ModelGenerator(nn.Module):
 
         return height
 
-    def forward(self, data, is_training):
+    def forward(self, data, is_training, save_feature_maps = False):
 
         current_value = data
 
         for layer in self.network:
             current_value = layer(current_value)
 
+            if save_feature_maps:
+
+                if layer.__class__.__name__ == "MaxPool2d":
+                    self.feature_maps.append(current_value.detach())
+
         if is_training == False:
             current_value = nn.functional.sigmoid(current_value)
 
         return current_value
 
-
+    def get_feature_maps(self):
+        return self.feature_maps
