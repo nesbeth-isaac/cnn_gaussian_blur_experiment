@@ -16,7 +16,7 @@ parametric_config.read('parametric_configuration.ini')
 
 cloud_config = configparser.ConfigParser()
 cloud_config.read('cloud_configuration.ini')
-
+EXPERIMENT_NAME = str(parametric_config['parametric_experiment_1']['experiment_name'])
 LINSPACE_STARTING_NODE = int(parametric_config['parametric_experiment_1']['fnn_architecture_np_linspace_start'])
 LINSPACE_ENDING_NODE = int(parametric_config['parametric_experiment_1']['fnn_architecture_np_linspace_end'])
 NUM_LAYERS = [int(num_node.strip()) for num_node in parametric_config['parametric_experiment_1']['fnn_architecture_np_linspace_num_layers'].split(',')]
@@ -72,7 +72,7 @@ print("Set up Model Architectures")
 print("Setting up Training Area")
 
 for untrained_model in models_store:
-    training_hold.append(ModelTrainingFactory(untrained_model, LEARNING_RATE))
+    training_hold.append(ModelTrainingFactory(untrained_model, LEARNING_RATE, EXPERIMENT_NAME))
 
     print("Running Training On ", training_hold[-1].generated_model.model_name)
 
@@ -81,20 +81,21 @@ for untrained_model in models_store:
 
 print("Generating Summary Graphs for Each Graph")
 
-# for trained_model in training_hold:
-#
-#     trained_model.generate_summary_data()
-#
-#     upload_centre.upload_file(trained_model.get_summary_graph_name(),
-#                               trained_model.get_summary_graph_name())
+for trained_model in training_hold:
+
+    trained_model.generate_summary_data()
+
+    upload_centre.upload_file(trained_model.get_summary_graph_name(),
+                              trained_model.get_summary_graph_name())
 
 
 print("Generating Summary Graph for All Experiments")
 
 graph_factory = GraphFactory(training_hold)
 
+graph_factory.set_graph_name(EXPERIMENT_NAME)
 saved_file_name = graph_factory.plot_graph()
 
 upload_centre.upload_file(saved_file_name, saved_file_name)
 
-
+print("Completed Experiment")

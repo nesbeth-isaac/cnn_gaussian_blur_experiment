@@ -35,7 +35,7 @@ CNN_INCREMENT_RATIO = int(parametric_config[EXPERIMENT_NAME]["num_parameters"])
 NUM_TRAINING_EPOCHS = int(parametric_config[EXPERIMENT_NAME]["num_training_epochs"])
 LEARNING_RATE = float(parametric_config[EXPERIMENT_NAME]["learning_rate"])
 
-EXPERIMENT_PARAMETERS = np.linspace(CNN_START_KERNEL_SIZE, CNN_END_KERNEL_SIZE, CNN_INCREMENT_RATIO)
+EXPERIMENT_PARAMETERS = np.floor(np.linspace(CNN_START_KERNEL_SIZE, CNN_END_KERNEL_SIZE, CNN_INCREMENT_RATIO))
 
 FFN_ARCHITECTURE = {1: [100, 75], 2: [75, 50], 3: [50, 25], 4: [25, 1]}
 
@@ -119,3 +119,5 @@ graph_factory.set_graph_name(EXPERIMENT_NAME)
 graph_name = graph_factory.plot_graph()
 
 upload_to_bucket.upload_file(graph_name, graph_name)
+
+print("Experiment Completed")

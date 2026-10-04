@@ -109,7 +109,7 @@ class ModelGenerator(nn.Module):
             if save_feature_maps:
 
                 if layer.__class__.__name__ == "MaxPool2d":
-                    self.feature_maps.append(current_value.detach())
+                    self.feature_maps.append(current_value.detach().cpu())
 
         if is_training == False:
             current_value = nn.functional.sigmoid(current_value)
@@ -118,3 +118,6 @@ class ModelGenerator(nn.Module):
 
     def get_feature_maps(self):
         return self.feature_maps
+
+    def clear_feature_maps(self):
+        self.feature_maps.clear()

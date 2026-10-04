@@ -105,11 +105,9 @@ for parameter in CNN_PARAMETERS:
 print("-------------------- Generating Training Area --------------------")
 
 for model in model_store:
-    training_store.append(ModelTrainingFactory(model, LEARNING_RATE))
+    training_store.append(ModelTrainingFactory(model, LEARNING_RATE, EXPERIMENT_NAME))
 
     training_store[-1].train_model(train_loader, dev_test_loader, NUM_TRAINING_EPOCHS)
-
-    training_store[-1].set_summary_graph_name(EXPERIMENT_NAME)
 
     training_store[-1].generate_summary_data()
 

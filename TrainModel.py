@@ -10,8 +10,6 @@ from sklearn.metrics import confusion_matrix as cm
 import matplotlib.pyplot as plt
 import math
 
-from ultralytics.trackers.utils import kalman_filter
-
 from UploadToBucket import UploadToBucket
 class ModelTrainingFactory:
 
@@ -148,6 +146,8 @@ class ModelTrainingFactory:
 
         plt.plot()
 
+        self.set_summary_graph_name()
+
         plt.savefig(self.summary_graph_name, format="png")
 
         print("File Saved")
@@ -185,10 +185,16 @@ class ModelTrainingFactory:
                  then again to access the specific feature map J in that layer.
         """
         data, labels = self.__test_data
+
+        data = data.to(self.device)
+
         output = self.generated_model.forward(data, is_training=False, save_feature_maps = True)
 
+        feature_maps = self.generated_model.get_feature_maps()
 
-        return self.generated_model.get_feature_maps()
+        self.generated_model.clear_feature_maps()
+
+        return feature_maps
 
     def generate_feature_map_summary_file(self):
         """
